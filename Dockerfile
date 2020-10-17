@@ -12,6 +12,6 @@ RUN apk update && apk add git && go get -v && go build -v
 ##########################################
 FROM gcr.io/distroless/static:latest
 
-COPY --from=builder /go/src/app/cmd/pricenotifier/pricenotifier /
+COPY --from=builder /go/src/github.com/300481/pricenotifier/cmd/pricenotifier/pricenotifier /
 
 ENTRYPOINT [ "/pricenotifier" ]
