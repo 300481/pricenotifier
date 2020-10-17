@@ -1,6 +1,6 @@
 // https://godoc.org/cloud.google.com/go/storage
 
-package pricenotifier
+package persistence
 
 import (
 	"context"

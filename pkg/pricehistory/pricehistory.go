@@ -1,4 +1,4 @@
-package pricenotifier
+package pricehistory
 
 import (
 	"encoding/json"
@@ -14,6 +14,7 @@ type Timestamp int64
 // Fuel specifies a type for fuel constants
 type Fuel string
 
+// Diesel, E10, E5 constant definitions
 const (
 	Diesel Fuel = "Diesel"
 	E10    Fuel = "E10"
