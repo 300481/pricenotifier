@@ -92,6 +92,7 @@ func (h *History) AddFuelPrices(timestamp Timestamp, fuel Fuel, prices []float64
 
 // GoodPrice returns true when given price is below Mean-StdDev
 func (h *History) GoodPrice(fuel Fuel, price float64) bool {
+	// TODO: check only for a given range in the past
 	var mean, std []float64
 
 	for _, price := range h.Items[fuel] {
