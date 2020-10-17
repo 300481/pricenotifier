@@ -37,14 +37,14 @@ func NewGoogleCloudStorage(bucketName, objectName string) *GoogleCloudStorage {
 }
 
 // NewReader returns a new io.Reader for the GoogleCloudStorage
-func (g *GoogleCloudStorage) NewReader() (r io.Reader, err error) {
+func (g *GoogleCloudStorage) NewReader() (r io.ReadCloser, err error) {
 	bucket := g.client.Bucket(g.bucketName)
 	object := bucket.Object(g.objectName)
 	return object.NewReader(g.context)
 }
 
 // NewWriter returns a new io.Reader for the GoogleCloudStorage
-func (g *GoogleCloudStorage) NewWriter() io.Writer {
+func (g *GoogleCloudStorage) NewWriter() io.WriteCloser {
 	bucket := g.client.Bucket(g.bucketName)
 	object := bucket.Object(g.objectName)
 	return object.NewWriter(g.context)
