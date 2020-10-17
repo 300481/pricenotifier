@@ -89,3 +89,22 @@ func (h *History) AddFuelPrices(timestamp Timestamp, fuel Fuel, prices []float64
 
 	return
 }
+
+// GoodPrice returns true when given price is below Mean-StdDev
+func (h *History) GoodPrice(fuel Fuel, price float64) bool {
+	var mean, std []float64
+
+	for _, price := range h.Items[fuel] {
+		for x := 0; x < price.Count; x++ {
+			mean = append(mean, price.Mean)
+			std = append(std, price.StdDev)
+		}
+	}
+
+	meanAll := stat.Mean(mean, nil)
+	stdAll := stat.Mean(std, nil)
+
+	good := meanAll - stdAll
+
+	return price < good
+}
