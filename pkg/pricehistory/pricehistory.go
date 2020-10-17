@@ -55,7 +55,9 @@ func ReadHistory(r io.Reader) *History {
 
 // Write writes a History to an io.Writer
 func (h *History) Write(w io.Writer) {
-	err := json.NewEncoder(w).Encode(h)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
+	err := enc.Encode(h)
 	if err != nil {
 		log.Println("error while encoding History to JSON")
 	}
@@ -69,11 +71,6 @@ func (h *History) AddFuelPrices(timestamp Timestamp, fuel Fuel, prices []float64
 		return
 	}
 
-	// clean up timestamp if it would exists already
-	if _, ok := h.Items[fuel][timestamp]; ok {
-		delete(h.Items[fuel], timestamp)
-	}
-
 	// instantiate a new price information
 	mean, std := stat.MeanStdDev(prices, nil)
 	price := &Price{
@@ -81,7 +78,14 @@ func (h *History) AddFuelPrices(timestamp Timestamp, fuel Fuel, prices []float64
 		StdDev: std,
 		Count:  len(prices),
 	}
-	h.Items[fuel][timestamp] = price
+
+	// instatiate the fuelmap if not existing
+	fuelmap, ok := h.Items[fuel]
+	if !ok {
+		fuelmap = make(map[Timestamp]*Price)
+		h.Items[fuel] = fuelmap
+	}
+	fuelmap[timestamp] = price
 
 	return
 }
