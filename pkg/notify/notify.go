@@ -10,7 +10,7 @@ import (
 	"github.com/gregdel/pushover"
 )
 
-// Notify will handle the cloud function call
+// Notify will send a notification via pushover
 func Notify(station tankerkoenig.Station, fuel pricehistory.Fuel) {
 	token := os.Getenv("PUSHOVER_TOKEN")
 	user := os.Getenv("PUSHOVER_USER")
