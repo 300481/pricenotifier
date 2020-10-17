@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/300481/pricenotifier/pkg/notify"
 	"github.com/300481/pricenotifier/pkg/persistence"
 	"github.com/300481/pricenotifier/pkg/pricehistory"
 	"github.com/300481/pricenotifier/pkg/pricesource"
@@ -51,10 +52,17 @@ func main() {
 		fmt.Println("error closing persistence")
 	}
 
-	// TODO add notification here
-	if ph.GoodPrice(pricehistory.Diesel, 1.012) {
-		fmt.Println("good")
-	} else {
-		fmt.Println("bad")
+	for _, station := range stations {
+		if station.IsOpen {
+			if ph.GoodPrice(pricehistory.Diesel, station.Diesel.(float64)) {
+				notify.Notify(station, pricehistory.Diesel)
+			}
+			if ph.GoodPrice(pricehistory.E10, station.E10.(float64)) {
+				notify.Notify(station, pricehistory.E10)
+			}
+			if ph.GoodPrice(pricehistory.E5, station.E5.(float64)) {
+				notify.Notify(station, pricehistory.E5)
+			}
+		}
 	}
 }
