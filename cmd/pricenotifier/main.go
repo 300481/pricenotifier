@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/300481/pricenotifier/pkg/notify"
@@ -36,9 +37,15 @@ func main() {
 
 	for _, station := range stations {
 		if station.IsOpen {
-			e5 = append(e5, station.E5.(float64))
-			e10 = append(e10, station.E10.(float64))
-			diesel = append(diesel, station.Diesel.(float64))
+			if station.E5 != nil {
+				e5 = append(e5, station.E5.(float64))
+			}
+			if station.E10 != nil {
+				e10 = append(e10, station.E10.(float64))
+			}
+			if station.Diesel != nil {
+				diesel = append(diesel, station.Diesel.(float64))
+			}
 		}
 	}
 
@@ -54,14 +61,22 @@ func main() {
 
 	for _, station := range stations {
 		if station.IsOpen {
-			if ph.GoodPrice(pricehistory.Diesel, station.Diesel.(float64)) {
-				notify.Notify(station, pricehistory.Diesel)
+			if station.E5 != nil {
+				if ph.GoodPrice(pricehistory.E5, station.E5.(float64)) {
+					notify.Notify(station, pricehistory.E5)
+					log.Printf("found good price for E5: %.3f€ at %s %s", station.E5.(float64), station.Brand, station.Place)
+				}
 			}
-			if ph.GoodPrice(pricehistory.E10, station.E10.(float64)) {
-				notify.Notify(station, pricehistory.E10)
-			}
-			if ph.GoodPrice(pricehistory.E5, station.E5.(float64)) {
-				notify.Notify(station, pricehistory.E5)
+			// if station.E10 != nil {
+			// 	if ph.GoodPrice(pricehistory.E10, station.E10.(float64)) {
+			// 		notify.Notify(station, pricehistory.E10)
+			// 	}
+			// }
+			if station.Diesel != nil {
+				if ph.GoodPrice(pricehistory.Diesel, station.Diesel.(float64)) {
+					notify.Notify(station, pricehistory.Diesel)
+					log.Printf("found good price for Diesel: %.3f€ at %s %s", station.Diesel.(float64), station.Brand, station.Place)
+				}
 			}
 		}
 	}
