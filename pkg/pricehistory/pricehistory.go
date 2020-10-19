@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"os"
+	"strconv"
+	"time"
 
 	"gonum.org/v1/gonum/stat"
 )
@@ -95,7 +98,14 @@ func (h *History) GoodPrice(fuel Fuel, price float64) bool {
 	// TODO: check only for a given range in the past
 	var mean, std []float64
 
-	for _, price := range h.Items[fuel] {
+	lastInHistory := time.Now().Unix() - maxAge
+
+	for timestamp, price := range h.Items[fuel] {
+		// if price record older then the defined maximum age
+		if int64(timestamp) < lastInHistory {
+			continue
+		}
+
 		for x := 0; x < price.Count; x++ {
 			mean = append(mean, price.Mean)
 			std = append(std, price.StdDev)
@@ -108,4 +118,18 @@ func (h *History) GoodPrice(fuel Fuel, price float64) bool {
 	good := meanAll - stdAll
 
 	return price < good
+}
+
+// initialization
+const daySeconds int64 = 86400
+
+var maxAge int64
+
+func init() {
+	days, err := strconv.Atoi(os.Getenv("DAYS"))
+	if err != nil {
+		maxAge = 7 * daySeconds
+	} else {
+		maxAge = int64(days) * daySeconds
+	}
 }
