@@ -120,6 +120,17 @@ func (h *History) GoodPrice(fuel Fuel, price float64) bool {
 	return price < good
 }
 
+// CleanHistory removes prices older than the max period given in days
+func (h *History) CleanHistory(fuel Fuel) {
+	lastInHistory := time.Now().Unix() - maxAge
+	for timestamp := range h.Items[fuel] {
+		// if price record older then the defined max period
+		if int64(timestamp) < lastInHistory {
+			delete(h.Items[fuel], timestamp)
+		}
+	}
+}
+
 // initialization
 const daySeconds int64 = 86400
 

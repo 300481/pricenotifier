@@ -49,9 +49,13 @@ func main() {
 		}
 	}
 
-	ph.AddFuelPrices(pricehistory.Timestamp(ts), pricehistory.Diesel, diesel)
 	ph.AddFuelPrices(pricehistory.Timestamp(ts), pricehistory.E5, e5)
 	ph.AddFuelPrices(pricehistory.Timestamp(ts), pricehistory.E10, e10)
+	ph.AddFuelPrices(pricehistory.Timestamp(ts), pricehistory.Diesel, diesel)
+
+	ph.CleanHistory(pricehistory.E5)
+	ph.CleanHistory(pricehistory.E10)
+	ph.CleanHistory(pricehistory.Diesel)
 
 	w := gcs.NewWriter()
 	ph.Write(w)
