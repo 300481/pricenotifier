@@ -21,11 +21,11 @@ func Notify(station tankerkoenig.Station, fuel pricehistory.Fuel) {
 
 	switch fuel {
 	case "Diesel":
-		msg = fmt.Sprintf("Price for Diesel: %.3f€ at %s in %s", station.Diesel.(float64), station.Brand, station.Place)
+		msg = fmt.Sprintf("Price for Diesel: %.3f€ \nat %s \nin %s", station.Diesel.(float64), station.Brand, station.Place)
 	case "E10":
-		msg = fmt.Sprintf("Price for E10: %.3f€ at %s in %s", station.E10.(float64), station.Brand, station.Place)
+		msg = fmt.Sprintf("Price for E10: %.3f€ \nat %s \nin %s", station.E10.(float64), station.Brand, station.Place)
 	case "E5":
-		msg = fmt.Sprintf("Price for E5: %.3f€ at %s in %s", station.E5.(float64), station.Brand, station.Place)
+		msg = fmt.Sprintf("Price for E5: %.3f€ \nat %s \nin %s", station.E5.(float64), station.Brand, station.Place)
 	}
 
 	message := pushover.NewMessage(msg)
