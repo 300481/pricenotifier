@@ -47,7 +47,7 @@ func NewStation(brand, name, place string) {
 		Brand: brand,
 		Name: name,
 		Place: place,
-		Prices: make(map[Fuel]map[Timestamp]float64)
+		Prices: make(map[Fuel]map[Timestamp]float64),
 	}
 }
 
