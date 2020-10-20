@@ -27,7 +27,19 @@ const (
 // History contains the history of mean price information
 // and for a specified fuel type
 type History struct {
-	Items map[Fuel]map[Timestamp]*Price
+	Items    map[Fuel]map[Timestamp]*Price
+	Stations map[StationID]*Station
+}
+
+// StationID is the UUID of a station
+type StationID string
+
+// Station represents a gas station with its price history
+type Station struct {
+	Brand  string
+	Name   string
+	Place  string
+	Prices map[Fuel]map[Timestamp]float64
 }
 
 // Price represents a mean price information for a specific time
@@ -40,7 +52,8 @@ type Price struct {
 // NewHistory returns a new instantiated *History
 func NewHistory() *History {
 	return &History{
-		Items: make(map[Fuel]map[Timestamp]*Price),
+		Items:    make(map[Fuel]map[Timestamp]*Price),
+		Stations: make(map[StationID]*Station),
 	}
 }
 
