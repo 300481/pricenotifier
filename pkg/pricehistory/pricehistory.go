@@ -42,11 +42,11 @@ type Station struct {
 }
 
 // NewStation returns an initialized *Station
-func NewStation(brand, name, place string) {
-	s := &Station{
-		Brand: brand,
-		Name: name,
-		Place: place,
+func NewStation(brand, name, place string) *Station {
+	return &Station{
+		Brand:  brand,
+		Name:   name,
+		Place:  place,
 		Prices: make(map[Fuel]map[Timestamp]float64),
 	}
 }
