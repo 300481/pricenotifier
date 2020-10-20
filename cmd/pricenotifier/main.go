@@ -63,20 +63,24 @@ func main() {
 	var goodStationDiesel tankerkoenig.Station
 
 	goodStationE5.E5 = 20.00
+	goodStationE5.Dist = 100
 	goodStationDiesel.Diesel = 20.00
+	goodStationDiesel.Dist = 100
 
 	for _, station := range stations {
 		if station.IsOpen {
 			if station.E5 != nil {
 				if ph.GoodPrice(pricehistory.E5, station.E5.(float64)) {
-					if station.E5.(float64) < goodStationE5.E5.(float64) {
+					if station.E5.(float64) <= goodStationE5.E5.(float64) &&
+						station.Dist < goodStationE5.Dist {
 						goodStationE5 = station
 					}
 				}
 			}
 			if station.Diesel != nil {
 				if ph.GoodPrice(pricehistory.Diesel, station.Diesel.(float64)) {
-					if station.Diesel.(float64) < goodStationDiesel.Diesel.(float64) {
+					if station.Diesel.(float64) <= goodStationDiesel.Diesel.(float64) &&
+						station.Dist < goodStationDiesel.Dist {
 						goodStationDiesel = station
 					}
 				}
