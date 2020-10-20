@@ -42,6 +42,16 @@ type Station struct {
 	Prices map[Fuel]map[Timestamp]float64
 }
 
+// NewStation returns an initialized *Station
+func NewStation(brand, name, place string) {
+	s := &Station{
+		Brand: brand,
+		Name: name,
+		Place: place,
+		Prices: make(map[Fuel]map[Timestamp]float64)
+	}
+}
+
 // Price represents a mean price information for a specific time
 type Price struct {
 	Mean   float64 // the calculated mean price information
