@@ -37,13 +37,26 @@ func main() {
 	var e5, diesel []float64
 
 	for _, station := range stations {
+		stationID := pricehistory.StationID(station.Id)
+		if _, ok := ph.Stations[stationID]; !ok {
+			ph.Stations[stationID] = pricehistory.NewStation(
+				station.Brand,
+				station.Name,
+				station.Place,
+			)
+		}
+
 		if station.IsOpen {
+			prices := make(map[pricehistory.Fuel]float64)
 			if station.E5 != nil {
 				e5 = append(e5, station.E5.(float64))
+				prices[pricehistory.E5] = station.E5.(float64)
 			}
 			if station.Diesel != nil {
 				diesel = append(diesel, station.Diesel.(float64))
+				prices[pricehistory.Diesel] = station.Diesel.(float64)
 			}
+			ph.Stations[stationID].AddFuelPrices(pricehistory.Timestamp(ts), prices)
 		}
 	}
 
