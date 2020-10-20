@@ -51,6 +51,16 @@ func NewStation(brand, name, place string) *Station {
 	}
 }
 
+// AddFuelPrices adds the current fuel prices to a station
+func (s *Station) AddFuelPrices(timestamp Timestamp, prices map[Fuel]float64) {
+	for fuel, price := range prices {
+		if _, ok := s.Prices[fuel]; !ok {
+			s.Prices[fuel] = make(map[Timestamp]float64)
+		}
+		s.Prices[fuel][timestamp] = price
+	}
+}
+
 // Price represents a mean price information for a specific time
 type Price struct {
 	Mean   float64 // the calculated mean price information
