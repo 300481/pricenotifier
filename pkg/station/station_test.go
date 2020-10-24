@@ -59,3 +59,17 @@ func TestPricesSince(t *testing.T) {
 		}
 	}
 }
+
+func TestLatestPrice(t *testing.T) {
+	station := NewStation("A", "A", "A")
+
+	for x := 10; x < 20; x++ {
+		station.AddPrice(int64(x), "A", float64(x))
+	}
+
+	latestPrice := station.LatestPrice("A")
+
+	if latestPrice != 19 {
+		t.Error("LatestPrice() failed, did not returned the latest price.")
+	}
+}

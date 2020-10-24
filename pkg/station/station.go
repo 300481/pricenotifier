@@ -44,3 +44,18 @@ func (s *Station) PricesSince(since int64, fuel string) []float64 {
 	}
 	return prices
 }
+
+// LatestPrice returns the latest price for the given fuel type
+func (s *Station) LatestPrice(fuel string) float64 {
+	var latestTimestamp int64
+	var latestPrice float64
+
+	for timestamp, price := range s.prices[fuel] {
+		if timestamp > latestTimestamp {
+			latestTimestamp = timestamp
+			latestPrice = price
+		}
+	}
+
+	return latestPrice
+}
