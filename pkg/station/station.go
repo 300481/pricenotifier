@@ -2,42 +2,42 @@ package station
 
 // Station represents a gas station with its price history
 type Station struct {
-	Brand  string                       // The brand of the station
-	Name   string                       // The name of the station
-	Place  string                       // The place of the station (city name)
-	Prices map[string]map[int64]float64 // the price history for the fuel type
+	brand  string                       // The brand of the station
+	name   string                       // The name of the station
+	place  string                       // The place of the station (city name)
+	prices map[string]map[int64]float64 // the price history for the fuel type
 }
 
 // NewStation returns a new Station
 func NewStation(brand, name, place string) *Station {
 	return &Station{
-		Brand:  brand,
-		Name:   name,
-		Place:  place,
-		Prices: make(map[string]map[int64]float64),
+		brand:  brand,
+		name:   name,
+		place:  place,
+		prices: make(map[string]map[int64]float64),
 	}
 }
 
 // Update updates the data of a station
 func (s *Station) Update(brand, name, place string) {
-	s.Brand = brand
-	s.Name = name
-	s.Place = place
+	s.brand = brand
+	s.name = name
+	s.place = place
 }
 
-// AddFuelPrice adds the current fuel price to a station
-func (s *Station) AddFuelPrice(timestamp int64, fuel string, price float64) {
-	if _, ok := s.Prices[fuel]; !ok {
-		s.Prices[fuel] = make(map[int64]float64)
+// AddPrice adds a fuel price to a station for the given unix epoch timestamp
+func (s *Station) AddPrice(timestamp int64, fuel string, price float64) {
+	if _, ok := s.prices[fuel]; !ok {
+		s.prices[fuel] = make(map[int64]float64)
 	}
-	s.Prices[fuel][timestamp] = price
+	s.prices[fuel][timestamp] = price
 }
 
 // PricesSince returns a slice of float64 with the prices since the given
 // epoch timestamp and for the given fuel type
 func (s *Station) PricesSince(since int64, fuel string) []float64 {
 	prices := []float64{}
-	for ts, price := range s.Prices[fuel] {
+	for ts, price := range s.prices[fuel] {
 		if ts >= since {
 			prices = append(prices, price)
 		}
