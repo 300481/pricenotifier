@@ -75,7 +75,7 @@ func TestBestStations(t *testing.T) {
 	for _, fuel := range testfuels {
 		bestStations := m.BestStations(fuel)
 		if len(bestStations) != len(teststations) {
-			t.Errorf("Error getting the best stations for fuel type: %s test stations: %v best stations: %v", fuel, bestStations, teststations)
+			t.Errorf("Error getting the best stations for fuel type: %s test stations: %v best stations: %v", fuel, teststations, bestStations)
 		}
 	}
 }

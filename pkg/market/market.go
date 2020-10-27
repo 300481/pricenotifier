@@ -13,20 +13,20 @@ import (
 
 // Market represents the whole station market
 type Market struct {
-	station map[string]*station.Station // map of station IDs and stations
+	station station.StationMap // map of station IDs and stations
 }
 
 // NewMarket returns an initialized *Market
 func NewMarket() *Market {
 	m := &Market{
-		station: make(map[string]*station.Station),
+		station: station.NewStationMap(),
 	}
 	return m
 }
 
 // BestStations returns the best stations as a map with station ID as key
-func (m *Market) BestStations(fuel string) map[string]*station.Station {
-	bestStations := make(map[string]*station.Station)
+func (m *Market) BestStations(fuel string) station.StationMap {
+	bestStations := station.NewStationMap()
 
 	prices := m.allPrices(fuel)
 	mean, dev := stat.MeanStdDev(prices, nil)
