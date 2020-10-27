@@ -24,7 +24,7 @@ func NewMarket() *Market {
 	return m
 }
 
-// BestStations updates the bestStations lists
+// BestStations returns the best stations as a map with station ID as key
 func (m *Market) BestStations(fuel string) map[string]*station.Station {
 	bestStations := make(map[string]*station.Station)
 
