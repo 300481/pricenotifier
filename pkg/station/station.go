@@ -1,5 +1,13 @@
 package station
 
+// StationMap is a map of stations with the station ID as the key
+type StationMap map[string]*Station
+
+// NewStationMap returns an initialized StationMap
+func NewStationMap() StationMap {
+	return make(StationMap)
+}
+
 // Station represents a gas station with its price history
 type Station struct {
 	brand  string                       // The brand of the station
