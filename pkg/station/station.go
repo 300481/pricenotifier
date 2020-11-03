@@ -67,3 +67,13 @@ func (s *Station) LatestPrice(fuel string) float64 {
 
 	return latestPrice
 }
+
+// Brand returns the brand of a station
+func (s *Station) Brand() string {
+	return s.brand
+}
+
+// Place returns the place of a station
+func (s *Station) Place() string {
+	return s.place
+}
