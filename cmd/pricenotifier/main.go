@@ -7,6 +7,9 @@ import (
 	"log"
 	"time"
 
+	"encoding/binary"
+
+	"github.com/300481/pricenotifier/pkg/market"
 	"github.com/300481/pricenotifier/pkg/notify"
 	"github.com/300481/pricenotifier/pkg/persistence"
 	"github.com/300481/pricenotifier/pkg/pricehistory"
@@ -14,7 +17,38 @@ import (
 	"github.com/alexruf/tankerkoenig-go"
 )
 
+func loadMarket() *market.Market {
+	var m *market.Market
+
+	gcs := persistence.NewGoogleCloudStorage("pricenotifier", "pricenotifier.dat")
+	r, err := gcs.NewReader()
+	if err != nil {
+		m = market.NewMarket()
+	} else {
+		err := binary.Read(r, binary.LittleEndian, m)
+		if err != nil {
+			m = market.NewMarket()
+		}
+	}
+	defer r.Close()
+
+	return m
+}
+
+func saveMarket(m *market.Market) {
+	gcs := persistence.NewGoogleCloudStorage("pricenotifier", "pricenotifier.dat")
+	w := gcs.NewWriter()
+	defer w.Close()
+
+	err := binary.Write(w, binary.LittleEndian, m)
+	if err != nil {
+		log.Println("Error saving market.")
+	}
+}
+
 func main() {
+	m := loadMarket()
+
 	var ph *pricehistory.History
 
 	gcs := persistence.NewGoogleCloudStorage("pricenotifier", "pricehistory.json")
@@ -71,6 +105,8 @@ func main() {
 	if err := w.Close(); err != nil {
 		fmt.Println("error closing persistence")
 	}
+
+	saveMarket(m)
 
 	var goodStationE5 tankerkoenig.Station
 	var goodStationDiesel tankerkoenig.Station
