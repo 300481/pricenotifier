@@ -71,6 +71,14 @@ func main() {
 	var e5, diesel []float64
 
 	for _, station := range stations {
+		// insert/update station in market
+		m.UpsertStation(
+			station.Id,
+			station.Brand,
+			station.Name,
+			station.Place,
+		)
+
 		stationID := pricehistory.StationID(station.Id)
 		if _, ok := ph.Stations[stationID]; !ok {
 			ph.Stations[stationID] = pricehistory.NewStation(
@@ -80,13 +88,16 @@ func main() {
 			)
 		}
 
+		// add price information if station is opened
 		if station.IsOpen {
 			prices := make(map[pricehistory.Fuel]float64)
 			if station.E5 != nil {
+				m.AddPrice(ts, station.Id, "E5", station.E5.(float64))
 				e5 = append(e5, station.E5.(float64))
 				prices[pricehistory.E5] = station.E5.(float64)
 			}
 			if station.Diesel != nil {
+				m.AddPrice(ts, station.Id, "Diesel", station.E5.(float64))
 				diesel = append(diesel, station.Diesel.(float64))
 				prices[pricehistory.Diesel] = station.Diesel.(float64)
 			}
