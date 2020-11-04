@@ -25,12 +25,12 @@ func TestUpdateBestStations(t *testing.T) {
 
 		nStations := len(stations)
 
-		nBestStations := len(n.currentBestStations[fueltype(fuel)])
+		nBestStations := len(n.CurrentBestStations[fueltype(fuel)])
 		if nBestStations != nStations {
 			t.Errorf("Count of best stations don't fits the right size. Got: %d must: %d", nBestStations, nStations)
 		}
 
-		nBestPrices := len(n.currentBestPrices[fueltype(fuel)])
+		nBestPrices := len(n.CurrentBestPrices[fueltype(fuel)])
 		if nBestPrices != nStations {
 			t.Errorf("Count of best prices don't fits the right size. Got: %d must: %d", nBestPrices, nStations)
 		}
