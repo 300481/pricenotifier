@@ -3,11 +3,8 @@ package notify
 import (
 	"fmt"
 	"log"
-	"os"
 
-	"github.com/300481/pricenotifier/pkg/pricehistory"
 	"github.com/300481/pricenotifier/pkg/station"
-	"github.com/alexruf/tankerkoenig-go"
 	"github.com/gregdel/pushover"
 )
 
@@ -112,21 +109,4 @@ func (p *PushoverClient) Notify(message string) bool {
 	}
 	log.Println(response)
 	return true
-}
-
-// Notify will send a notification via pushover
-func Notify(station tankerkoenig.Station, fuel pricehistory.Fuel) {
-	var msg string
-	switch fuel {
-	case "Diesel":
-		msg = fmt.Sprintf("Price for Diesel: %.3f€ \nat %s \nin %s", station.Diesel.(float64), station.Brand, station.Place)
-	case "E10":
-		msg = fmt.Sprintf("Price for E10: %.3f€ \nat %s \nin %s", station.E10.(float64), station.Brand, station.Place)
-	case "E5":
-		msg = fmt.Sprintf("Price for E5: %.3f€ \nat %s \nin %s", station.E5.(float64), station.Brand, station.Place)
-	}
-	NewPushover(
-		os.Getenv("PUSHOVER_TOKEN"),
-		os.Getenv("PUSHOVER_USER"),
-	).Notify(msg)
 }
