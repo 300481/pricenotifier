@@ -17,7 +17,7 @@ type Notifier struct {
 	CurrentBestPrices    map[fueltype]map[stationID]float64
 	NotifiedBestStations map[fueltype]station.StationMap
 	NotifiedBestPrices   map[fueltype]map[stationID]float64
-	Client               Client
+	client               Client
 }
 
 // NewNotifier returns an initialized *Notifier
@@ -27,7 +27,7 @@ func NewNotifier(client Client) *Notifier {
 		CurrentBestPrices:    make(map[fueltype]map[stationID]float64),
 		NotifiedBestStations: make(map[fueltype]station.StationMap),
 		NotifiedBestPrices:   make(map[fueltype]map[stationID]float64),
-		Client:               client,
+		client:               client,
 	}
 }
 
@@ -68,7 +68,7 @@ func (n *Notifier) Notify() bool {
 	}
 	// if there is a best station
 	if len(msg) > 0 {
-		return n.Client.Notify(msg)
+		return n.client.Notify(msg)
 	}
 	return false
 }
