@@ -9,9 +9,9 @@ import (
 func TestUpdate(t *testing.T) {
 	station := NewStation("A", "A", "A")
 	station.Update("B", "B", "B")
-	if station.brand != "B" ||
-		station.name != "B" ||
-		station.place != "B" {
+	if station.Brand != "B" ||
+		station.Name != "B" ||
+		station.Place != "B" {
 		t.Error("Error on testing Station.Update()")
 	}
 }
@@ -23,7 +23,7 @@ func TestAddPrice(t *testing.T) {
 	station.AddPrice(ts, "A", 1.0)
 	station.AddPrice(ts, "B", 2.0)
 
-	if price, ok := station.prices["A"]; !ok {
+	if price, ok := station.Prices["A"]; !ok {
 		t.Error("Price addition failed for fuel type A")
 	} else {
 		if price[ts] != 1.0 {
@@ -31,7 +31,7 @@ func TestAddPrice(t *testing.T) {
 		}
 	}
 
-	if price, ok := station.prices["B"]; !ok {
+	if price, ok := station.Prices["B"]; !ok {
 		t.Error("Price addition failed for fuel type B")
 	} else {
 		if price[ts] != 2.0 {
