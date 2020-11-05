@@ -17,6 +17,7 @@ type Notifier struct {
 	CurrentBestPrices    map[fueltype]map[stationID]float64
 	NotifiedBestStations map[fueltype]station.StationMap
 	NotifiedBestPrices   map[fueltype]map[stationID]float64
+	GoodPrice            map[fueltype]float64
 	client               Client
 }
 
@@ -27,13 +28,15 @@ func NewNotifier(client Client) *Notifier {
 		CurrentBestPrices:    make(map[fueltype]map[stationID]float64),
 		NotifiedBestStations: make(map[fueltype]station.StationMap),
 		NotifiedBestPrices:   make(map[fueltype]map[stationID]float64),
+		GoodPrice:            make(map[fueltype]float64),
 		client:               client,
 	}
 }
 
 // UpdateBestStations updates the best stations of the Notifier
-func (n *Notifier) UpdateBestStations(fuel string, bestStations station.StationMap) {
+func (n *Notifier) UpdateBestStations(fuel string, goodPrice float64, bestStations station.StationMap) {
 	n.CurrentBestStations[fueltype(fuel)] = bestStations
+	n.GoodPrice[fueltype(fuel)] = goodPrice
 
 	// make prices map if needed
 	if _, ok := n.CurrentBestPrices[fueltype(fuel)]; !ok {
@@ -47,7 +50,7 @@ func (n *Notifier) UpdateBestStations(fuel string, bestStations station.StationM
 
 	// save current best prices
 	for ID, s := range n.CurrentBestStations[fueltype(fuel)] {
-		n.CurrentBestPrices[fueltype(fuel)][stationID(ID)] = s.LatestPrice(fuel)
+		_, n.CurrentBestPrices[fueltype(fuel)][stationID(ID)] = s.LatestPrice(fuel)
 	}
 }
 
@@ -57,6 +60,7 @@ func (n *Notifier) Notify() bool {
 	var msg string
 	// for each fuel
 	for fuel, sm := range n.CurrentBestStations {
+		msg += fmt.Sprintf("Good price for %s : %.3f€\n", fuel, n.GoodPrice[fuel])
 		// for each station of the best stations
 		for ID, s := range sm {
 			price := n.CurrentBestPrices[fuel][stationID(ID)]

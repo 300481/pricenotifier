@@ -21,7 +21,7 @@ func TestUpdateBestStations(t *testing.T) {
 			sm[s] = station.NewStation(s, s, s)
 			sm[s].AddPrice(1, fuel, price)
 		}
-		n.UpdateBestStations(fuel, sm)
+		n.UpdateBestStations(fuel, price, sm)
 
 		nStations := len(stations)
 
@@ -49,7 +49,7 @@ func TestNotify(t *testing.T) {
 	sm[testStation] = station.NewStation(testStation, testStation, testStation)
 	sm[testStation].AddPrice(1, testFuel, testPrice)
 
-	n.UpdateBestStations(testFuel, sm)
+	n.UpdateBestStations(testFuel, testPrice, sm)
 
 	// will call the testclient, which checks if the notification message is ok
 	if !n.Notify() {
@@ -59,6 +59,6 @@ func TestNotify(t *testing.T) {
 
 // Notify is the testClient notification function which tests if the message is ok
 func (t *testClient) Notify(message string) bool {
-	testMessage := "Best price for Diesel : 1.000€ \nat A \nin A\n\n"
+	testMessage := "Good price for Diesel : 1.000€\nBest price for Diesel : 1.000€ \nat A \nin A\n\n"
 	return message == testMessage
 }
