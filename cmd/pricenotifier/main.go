@@ -3,18 +3,20 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"encoding/json"
 
 	"github.com/300481/pricenotifier/pkg/market"
+	"github.com/300481/pricenotifier/pkg/notify"
 	"github.com/300481/pricenotifier/pkg/persistence"
 	"github.com/300481/pricenotifier/pkg/pricesource"
 )
 
 func loadMarket() *market.Market {
+	log.Println("load market data from persistence.")
 	var m *market.Market = &market.Market{}
 
 	gcs := persistence.NewGoogleCloudStorage("pricenotifier", "pricenotifier.json")
@@ -34,6 +36,7 @@ func loadMarket() *market.Market {
 }
 
 func saveMarket(m *market.Market) {
+	log.Println("save market data to persistence.")
 	gcs := persistence.NewGoogleCloudStorage("pricenotifier", "pricenotifier.json")
 	w := gcs.NewWriter()
 	defer w.Close()
@@ -44,14 +47,13 @@ func saveMarket(m *market.Market) {
 	}
 }
 
-func updateMarket(m *market.Market) {
+func updateMarket(timestamp int64, m *market.Market) {
+	log.Println("update market.")
 	stations, err := pricesource.GetStations()
 	if err != nil {
-		fmt.Println("error while getting gas stations", err)
+		log.Println("error while getting gas stations", err)
 		return
 	}
-
-	ts := time.Now().Unix()
 
 	for _, station := range stations {
 		// insert/update station in market
@@ -65,17 +67,36 @@ func updateMarket(m *market.Market) {
 		// add price information if station is opened
 		if station.IsOpen {
 			if station.E5 != nil {
-				m.AddPrice(ts, station.Id, "E5", station.E5.(float64))
+				m.AddPrice(timestamp, station.Id, "E5", station.E5.(float64))
 			}
 			if station.Diesel != nil {
-				m.AddPrice(ts, station.Id, "Diesel", station.Diesel.(float64))
+				m.AddPrice(timestamp, station.Id, "Diesel", station.Diesel.(float64))
 			}
 		}
 	}
 }
 
+func send(timestamp int64, m *market.Market) {
+	log.Println("send notification.")
+	client := notify.NewPushover(
+		os.Getenv("PUSHOVER_TOKEN"),
+		os.Getenv("PUSHOVER_USER"),
+	)
+	notifier := notify.NewNotifier(client)
+	for _, fuel := range []string{"Diesel", "E5"} {
+		goodPrice, bestStations := m.BestStations(timestamp, fuel)
+		notifier.UpdateBestStations(fuel, goodPrice, bestStations)
+		for ID, s := range bestStations {
+			log.Println(fuel, ID, s.Brand, s.Name, s.Place, goodPrice)
+		}
+	}
+	notifier.Notify()
+}
+
 func main() {
 	m := loadMarket()
-	updateMarket(m)
+	ts := time.Now().Unix()
+	updateMarket(ts, m)
 	saveMarket(m)
+	send(ts, m)
 }
