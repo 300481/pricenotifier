@@ -67,7 +67,11 @@ func TestLatestPrice(t *testing.T) {
 		station.AddPrice(int64(x), "A", float64(x))
 	}
 
-	latestPrice := station.LatestPrice("A")
+	ts, latestPrice := station.LatestPrice("A")
+
+	if ts != int64(19) {
+		t.Error("LatestPrice() failed, did not returned the right timestamp.")
+	}
 
 	if latestPrice != 19 {
 		t.Error("LatestPrice() failed, did not returned the latest price.")
