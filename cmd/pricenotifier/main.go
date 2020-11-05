@@ -85,9 +85,10 @@ func send(timestamp int64, m *market.Market) {
 	notifier := notify.NewNotifier(client)
 	for _, fuel := range []string{"Diesel", "E5"} {
 		goodPrice, bestStations := m.BestStations(timestamp, fuel)
+		log.Println("Good Price for ", fuel, goodPrice)
 		notifier.UpdateBestStations(fuel, goodPrice, bestStations)
 		for ID, s := range bestStations {
-			log.Println(fuel, ID, s.Brand, s.Name, s.Place, goodPrice)
+			log.Println(fuel, ID, s.Brand, s.Name, s.Place)
 		}
 	}
 	notifier.Notify()
