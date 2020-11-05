@@ -25,21 +25,21 @@ func NewMarket() *Market {
 }
 
 // BestStations returns the best stations as a map with station ID as key
-func (m *Market) BestStations(fuel string) station.StationMap {
+func (m *Market) BestStations(timestamp int64, fuel string) (goodPrice float64, stations station.StationMap) {
 	bestStations := station.NewStationMap()
 
 	prices := m.allPrices(fuel)
 	mean, dev := stat.MeanStdDev(prices, nil)
-	goodPrice := mean - dev
+	goodPrice = mean - dev
 
 	for ID, s := range m.Station {
-		latestPrice := s.LatestPrice(fuel)
-		if latestPrice < goodPrice {
+		ts, latestPrice := s.LatestPrice(fuel)
+		if (ts == timestamp) && (latestPrice <= goodPrice) {
 			bestStations[ID] = s
 		}
 	}
 
-	return bestStations
+	return goodPrice, bestStations
 }
 
 // allPrices returns all prices for a fuel type

@@ -73,7 +73,7 @@ func TestBestStations(t *testing.T) {
 	m := prepareTestMarket()
 
 	for _, fuel := range testfuels {
-		bestStations := m.BestStations(fuel)
+		_, bestStations := m.BestStations(maxAge+int64(maxts-1), fuel)
 		if len(bestStations) != len(teststations) {
 			t.Errorf("Error getting the best stations for fuel type: %s test stations: %v best stations: %v", fuel, teststations, bestStations)
 		}
