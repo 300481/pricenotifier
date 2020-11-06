@@ -88,7 +88,7 @@ func send(timestamp int64, m *market.Market) {
 		log.Println("Good Price for ", fuel, goodPrice)
 		notifier.UpdateBestStations(fuel, goodPrice, bestStations)
 		for ID, s := range bestStations {
-			log.Println(fuel, ID, s.Brand, s.Name, s.Place)
+			log.Println("Good station for", fuel, ID, s.Brand, s.Name, s.Place)
 		}
 	}
 	notifier.Notify()
