@@ -33,8 +33,7 @@ func (m *Market) BestStations(timestamp int64, fuel string) (goodPrice float64, 
 	goodPrice = mean - dev
 
 	for ID, s := range m.Station {
-		ts, latestPrice := s.LatestPrice(fuel)
-		if (ts == timestamp) && (latestPrice <= goodPrice) {
+		if s.IsBestStation(timestamp, fuel, goodPrice) {
 			bestStations[ID] = s
 		}
 	}
