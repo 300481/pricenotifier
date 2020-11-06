@@ -3,6 +3,7 @@ package notify
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/300481/pricenotifier/pkg/station"
 	"github.com/gregdel/pushover"
@@ -14,9 +15,7 @@ type stationID string
 // Notifier represents a notifier struct with information about best stations and last notifications
 type Notifier struct {
 	CurrentBestStations  map[fueltype]station.StationMap
-	CurrentBestPrices    map[fueltype]map[stationID]float64
 	NotifiedBestStations map[fueltype]station.StationMap
-	NotifiedBestPrices   map[fueltype]map[stationID]float64
 	GoodPrice            map[fueltype]float64
 	client               Client
 }
@@ -25,9 +24,7 @@ type Notifier struct {
 func NewNotifier(client Client) *Notifier {
 	return &Notifier{
 		CurrentBestStations:  make(map[fueltype]station.StationMap),
-		CurrentBestPrices:    make(map[fueltype]map[stationID]float64),
 		NotifiedBestStations: make(map[fueltype]station.StationMap),
-		NotifiedBestPrices:   make(map[fueltype]map[stationID]float64),
 		GoodPrice:            make(map[fueltype]float64),
 		client:               client,
 	}
@@ -37,21 +34,6 @@ func NewNotifier(client Client) *Notifier {
 func (n *Notifier) UpdateBestStations(fuel string, goodPrice float64, bestStations station.StationMap) {
 	n.CurrentBestStations[fueltype(fuel)] = bestStations
 	n.GoodPrice[fueltype(fuel)] = goodPrice
-
-	// make prices map if needed
-	if _, ok := n.CurrentBestPrices[fueltype(fuel)]; !ok {
-		n.CurrentBestPrices[fueltype(fuel)] = make(map[stationID]float64)
-	}
-
-	// cleanup prices map
-	for ID := range n.CurrentBestPrices[fueltype(fuel)] {
-		delete(n.CurrentBestPrices[fueltype(fuel)], ID)
-	}
-
-	// save current best prices
-	for ID, s := range n.CurrentBestStations[fueltype(fuel)] {
-		_, n.CurrentBestPrices[fueltype(fuel)][stationID(ID)] = s.LatestPrice(fuel)
-	}
 }
 
 // Notify will send a notification if there are best stations available currently
@@ -62,8 +44,8 @@ func (n *Notifier) Notify() bool {
 	for fuel, sm := range n.CurrentBestStations {
 		msg += fmt.Sprintf("Good price for %s : %.3f€\n", fuel, n.GoodPrice[fuel])
 		// for each station of the best stations
-		for ID, s := range sm {
-			price := n.CurrentBestPrices[fuel][stationID(ID)]
+		for _, s := range sm {
+			price := s.Latest[string(fuel)].Value
 			msg += fmt.Sprintf(
 				"Best price for %s : %.3f€ \nat %s \nin %s\n\n",
 				string(fuel), price, s.Brand, s.Place,
@@ -71,7 +53,8 @@ func (n *Notifier) Notify() bool {
 		}
 	}
 	// if there is a best station
-	if len(msg) > 0 {
+	x := len(strings.Split(msg, "\n"))
+	if x > 3 {
 		return n.client.Notify(msg)
 	}
 	return false
