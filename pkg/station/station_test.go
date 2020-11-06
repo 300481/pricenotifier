@@ -63,11 +63,19 @@ func TestPricesSince(t *testing.T) {
 func TestLatestPrice(t *testing.T) {
 	station := NewStation("A", "A", "A")
 
+	_, _, err := station.LatestPrice("A")
+	if err == nil {
+		t.Error("LatestPrice() failed, should return an error.")
+	}
+
 	for x := 10; x < 20; x++ {
 		station.AddPrice(int64(x), "A", float64(x))
 	}
 
-	ts, latestPrice := station.LatestPrice("A")
+	ts, latestPrice, err := station.LatestPrice("A")
+	if err != nil {
+		t.Error("LatestPrice() failed, should not return an error.")
+	}
 
 	if ts != int64(19) {
 		t.Error("LatestPrice() failed, did not returned the right timestamp.")
