@@ -15,6 +15,7 @@ type stationID string
 // Notifier represents a notifier struct with information about best stations and last notifications
 type Notifier struct {
 	BestStations map[fueltype]station.StationMap
+	lastNotified map[fueltype]station.StationMap
 	GoodPrice    map[fueltype]float64
 	client       Client
 }
@@ -30,6 +31,7 @@ func NewNotifier(client Client) *Notifier {
 
 // UpdateBestStations updates the best stations of the Notifier
 func (n *Notifier) UpdateBestStations(fuel string, goodPrice float64, bestStations station.StationMap) {
+	n.lastNotified = n.BestStations
 	n.BestStations[fueltype(fuel)] = bestStations
 	n.GoodPrice[fueltype(fuel)] = goodPrice
 }
