@@ -14,25 +14,23 @@ type stationID string
 
 // Notifier represents a notifier struct with information about best stations and last notifications
 type Notifier struct {
-	CurrentBestStations  map[fueltype]station.StationMap
-	NotifiedBestStations map[fueltype]station.StationMap
-	GoodPrice            map[fueltype]float64
-	client               Client
+	BestStations map[fueltype]station.StationMap
+	GoodPrice    map[fueltype]float64
+	client       Client
 }
 
 // NewNotifier returns an initialized *Notifier
 func NewNotifier(client Client) *Notifier {
 	return &Notifier{
-		CurrentBestStations:  make(map[fueltype]station.StationMap),
-		NotifiedBestStations: make(map[fueltype]station.StationMap),
-		GoodPrice:            make(map[fueltype]float64),
-		client:               client,
+		BestStations: make(map[fueltype]station.StationMap),
+		GoodPrice:    make(map[fueltype]float64),
+		client:       client,
 	}
 }
 
 // UpdateBestStations updates the best stations of the Notifier
 func (n *Notifier) UpdateBestStations(fuel string, goodPrice float64, bestStations station.StationMap) {
-	n.CurrentBestStations[fueltype(fuel)] = bestStations
+	n.BestStations[fueltype(fuel)] = bestStations
 	n.GoodPrice[fueltype(fuel)] = goodPrice
 }
 
@@ -41,7 +39,7 @@ func (n *Notifier) UpdateBestStations(fuel string, goodPrice float64, bestStatio
 func (n *Notifier) Notify() bool {
 	var msg string
 	// for each fuel
-	for fuel, sm := range n.CurrentBestStations {
+	for fuel, sm := range n.BestStations {
 		msg += fmt.Sprintf("Good price for %s : %.3f€\n", fuel, n.GoodPrice[fuel])
 		// for each station of the best stations
 		for _, s := range sm {
