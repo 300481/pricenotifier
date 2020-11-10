@@ -34,7 +34,7 @@ func (m *Market) BestStations(timestamp int64, fuel string) (goodPrice float64, 
 
 	for ID, s := range m.Station {
 		if s.IsBestStation(timestamp, fuel, goodPrice) {
-			bestStations[ID] = s
+			bestStations[ID] = s.Clone()
 		}
 	}
 
