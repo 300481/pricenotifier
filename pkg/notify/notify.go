@@ -34,6 +34,11 @@ func (n *Notifier) UpdateBestStations(fuel string, goodPrice float64, bestStatio
 	n.GoodPrice[fueltype(fuel)] = goodPrice
 }
 
+// SetClient sets the client for a notifier loaded from a persistent storage
+func (n *Notifier) SetClient(client Client) {
+	n.client = client
+}
+
 // Notify will send a notification if there are best stations available currently
 // Returns if a message was send
 func (n *Notifier) Notify() bool {
