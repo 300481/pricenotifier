@@ -85,3 +85,30 @@ func TestLatestPrice(t *testing.T) {
 		t.Error("LatestPrice() failed, did not returned the latest price.")
 	}
 }
+
+func TestClone(t *testing.T) {
+	s := NewStation("A", "A", "A")
+	s.AddPrice(1, "Diesel", 1.0)
+
+	d := s.Clone()
+	if (d.Brand != "A") || (d.Name != "A") || (d.Place != "A") {
+		t.Error("Clone() failed. Brand, Name or Place wrong.")
+	}
+
+	prices, ok := d.Prices["Diesel"]
+	if !ok {
+		t.Error("Clone() failed. Prices not copied.")
+	}
+
+	price, ok := prices[1]
+	if !ok {
+		t.Error("Clone() failed. Prices not copied.")
+	}
+
+	// change price in source object
+	s.Prices["Diesel"][1] = 2.0
+
+	if price != 1.0 {
+		t.Error("Clone() failed. Prices not correct.")
+	}
+}

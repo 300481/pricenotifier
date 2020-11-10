@@ -2,6 +2,8 @@ package station
 
 import (
 	"fmt"
+
+	"github.com/gotidy/copy"
 )
 
 // StationMap is a map of stations with the station ID as the key
@@ -96,4 +98,11 @@ func (s *Station) IsBestStation(timestamp int64, fuel string, goodPrice float64)
 		return false
 	}
 	return true
+}
+
+// Clone returns a copy of the current station
+func (s *Station) Clone() *Station {
+	x := &Station{}
+	copy.New().Get(x, s).Copy(x, s)
+	return x
 }
