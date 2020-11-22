@@ -4,9 +4,8 @@ import "time"
 
 // Market is the interface for market interaction
 type Market interface {
-	Add(station *Station)                                                         // Add a station information to the market
-	GetBestPriceStations(customer *Customer, fuelType FuelType) (Stations, error) // Get the best price stations of interest for a customer and fuel type
-	Get(customer *Customer, option GetOption) (Stations, error)                   // Get the stations of customer interest
+	Add(station *Station)                                                     // Add a station information to the market
+	Get(customer *Customer, option GetOption) (map[FuelType]*Stations, error) // Get the stations of customer interest
 }
 
 // FuelType is a type representing a fuel
@@ -41,6 +40,7 @@ type Stations []*Station
 type Customer struct {
 	MaxAge   int64       // Maximum Age of the prices for calculating a good price
 	Location Geolocation // The customer geo location
+	Fuels    []FuelType  // Fuel Types of interest
 }
 
 // Geolocation represents geo coordinates
