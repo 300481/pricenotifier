@@ -6,7 +6,7 @@ import "time"
 type Market interface {
 	Add(station *Station)                                                         // Add a station information to the market
 	GetBestPriceStations(customer *Customer, fuelType FuelType) (Stations, error) // Get the best price stations of interest for a customer and fuel type
-	Get(customer *Customer, option GetOption)                                     // Get the stations of customer interest
+	Get(customer *Customer, option GetOption) (Stations, error)                   // Get the stations of customer interest
 }
 
 // FuelType is a type representing a fuel
