@@ -10,6 +10,7 @@ import (
 // MarketService represents the struct for all market information
 type MarketService struct {
 	Stations Stations
+	// TODO: implement a geolocation map
 }
 
 // Timestamp is a unix epoch timestamp
@@ -42,6 +43,7 @@ func NewMarketService() *MarketService {
 
 // Add a station information to the market
 func (ms *MarketService) Add(station *market.Station) {
+	// TODO: geolocation map for customer interest station selection
 	timestamp := Timestamp(station.Timestamp.Unix())
 	id := StationID(station.ID)
 
