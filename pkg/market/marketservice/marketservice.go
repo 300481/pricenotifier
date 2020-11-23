@@ -1,7 +1,6 @@
 package marketservice
 
 import (
-	"errors"
 	"time"
 
 	"github.com/300481/pricenotifier/pkg/market"
@@ -24,6 +23,7 @@ type Stations map[StationID]*Station
 
 // Station represents the MarketService station information
 type Station struct {
+	ID          string
 	Brand       string
 	Name        string
 	Place       string
@@ -56,6 +56,7 @@ func (ms *MarketService) Add(station *market.Station) {
 	s := ms.Stations[id]
 
 	// update station information
+	s.ID = station.ID
 	s.Brand = station.Brand
 	s.Name = station.Name
 	s.Place = station.Place
@@ -79,7 +80,7 @@ func (ms *MarketService) Add(station *market.Station) {
 func (ms *MarketService) customerStations(customer *market.Customer) Stations {
 	stations := make(map[StationID]*Station)
 	// mock the stations
-	// TODO: implement customer based station map
+	// TODO: implement customer based station map by geolocation and radius
 	for stationid, station := range ms.Stations {
 		stations[stationid] = station
 	}
@@ -87,10 +88,10 @@ func (ms *MarketService) customerStations(customer *market.Customer) Stations {
 }
 
 // marketStation transforms a Station of MarketService to a market.Station
-func (ms *MarketService) marketStation(stationID StationID, src *Station) *market.Station {
+func (ms *MarketService) marketStation(src *Station) *market.Station {
 	timestamp := src.LastUpdated
 	dst := &market.Station{
-		ID:        string(stationID),
+		ID:        src.ID,
 		Brand:     src.Brand,
 		Name:      src.Name,
 		Place:     src.Place,
@@ -106,11 +107,10 @@ func (ms *MarketService) marketStation(stationID StationID, src *Station) *marke
 }
 
 // goodPrice returns the good price for a fuel type and the stations of customers interest
-func (ms *MarketService) goodPrice(customer *market.Customer, fuelType market.FuelType) (float64, Stations, error) {
+// returns -1 on error
+func (ms *MarketService) goodPrice(stations Stations, fuelType market.FuelType, maxAge int64) float64 {
 	goodPrice := 1000.0
 	prices := []float64{}
-	maxAge := time.Now().Unix() - customer.MaxAge
-	stations := ms.customerStations(customer)
 
 	for stationID, station := range stations {
 		for timestamp, isOpen := range station.IsOpen {
@@ -126,35 +126,55 @@ func (ms *MarketService) goodPrice(customer *market.Customer, fuelType market.Fu
 	}
 
 	if len(prices) == 0 {
-		return 0.0, nil, errors.New("No prices available")
+		return -1
 	}
 
 	mean, dev := stat.MeanStdDev(prices, nil)
 	goodPrice = mean - dev
 
-	return goodPrice, stations, nil
+	return goodPrice
 }
 
-// GetBestPriceStations the best price stations of interest for a customer and fuel type
-func (ms *MarketService) GetBestPriceStations(customer *market.Customer, fuelType market.FuelType) (market.Stations, error) {
-	// first get what is a good price
-	goodPrice, customerStations, err := ms.goodPrice(customer, fuelType)
-	if err != nil {
-		return nil, err
+// Get returns a map of Fuel with the stations of customer interest,
+// limited by the option
+func (ms *MarketService) Get(customer *market.Customer, option market.GetOption) map[market.FuelType]market.Stations {
+	customerStations := make(map[market.FuelType]Stations)
+	stations := make(map[market.FuelType]market.Stations)
+
+	for _, fuelType := range customer.Fuels {
+		// get the stations of customer interest
+		customerStations[fuelType] = ms.customerStations(customer)
+
+		// remove stations which have not a good price, if wanted by option
+		if option == market.GetBest {
+			maxAge := time.Now().Unix() - customer.MaxAge
+			goodPrice := make(map[market.FuelType]float64)
+			for _, fuelType := range customer.Fuels {
+				goodPrice[fuelType] = ms.goodPrice(customerStations[fuelType], fuelType, maxAge)
+				if goodPrice[fuelType] == -1 {
+					// on error clean stations and continue to next fuel type
+					customerStations[fuelType] = nil
+					continue
+				}
+				for stationID, station := range customerStations[fuelType] {
+					timestamp := station.LastUpdated
+					if station.IsOpen[timestamp] {
+						continue
+					}
+					if station.Price[fuelType][timestamp] <= goodPrice[fuelType] {
+						continue
+					}
+					delete(customerStations[fuelType], stationID)
+				}
+			}
+		}
+
+		// export Stations as market.Stations
+		for _, station := range customerStations[fuelType] {
+			mStation := ms.marketStation(station)
+			stations[fuelType] = append(stations[fuelType], mStation)
+		}
 	}
 
-	var stations market.Stations
-
-	for stationID, station := range customerStations {
-		mStation := ms.marketStation(stationID, station)
-		if !mStation.IsOpen {
-			continue
-		}
-		if mStation.Price[fuelType] > goodPrice {
-			continue
-		}
-		stations = append(stations, mStation)
-	}
-
-	return stations, nil
+	return stations
 }
