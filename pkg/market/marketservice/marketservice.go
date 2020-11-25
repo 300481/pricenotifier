@@ -100,6 +100,7 @@ func (ms *MarketService) marketStation(src *Station) *market.Station {
 		Lat:       src.Lat,
 		Lng:       src.Lng,
 		IsOpen:    src.IsOpen[timestamp],
+		Price:     make(map[market.FuelType]float64),
 		Timestamp: time.Unix(int64(timestamp), 0),
 	}
 	for fuelType := range src.Price {
