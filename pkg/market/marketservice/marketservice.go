@@ -177,3 +177,18 @@ func (ms *MarketService) Get(customer *market.Customer, option market.GetOption)
 
 	return stations
 }
+
+// GoodPrice returns a map of Fuel with the good price
+func (ms *MarketService) GoodPrice(customer *market.Customer) map[market.FuelType]float64 {
+	customerStations := make(map[market.FuelType]Stations)
+	goodPrice := make(map[market.FuelType]float64)
+
+	for _, fuelType := range customer.Fuels {
+		customerStations[fuelType] = ms.customerStations(customer)
+		for _, fuelType := range customer.Fuels {
+			goodPrice[fuelType] = ms.goodPrice(customerStations[fuelType], fuelType, customer.MaxAge)
+		}
+	}
+
+	return goodPrice
+}
