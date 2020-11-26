@@ -38,10 +38,10 @@ type Stations []*Station
 
 // Customer represents a stations customer
 type Customer struct {
-	MaxAge   int64       // Maximum Age of the prices for calculating a good price
-	Location Geolocation // The customer geo location
-	Radius   int64       // The radius to look for stations of interest
-	Fuels    []FuelType  // Fuel Types of interest
+	MaxAge   time.Duration // Maximum Age of the prices for calculating a good price as Unix Nano
+	Location Geolocation   // The customer geo location
+	Radius   int64         // The radius to look for stations of interest
+	Fuels    []FuelType    // Fuel Types of interest
 }
 
 // Geolocation represents geo coordinates
