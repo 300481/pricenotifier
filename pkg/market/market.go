@@ -4,8 +4,9 @@ import "time"
 
 // Market is the interface for market interaction
 type Market interface {
-	Add(station *Station)                                                    // Add a station information to the market
-	Get(customer *Customer, option GetOption) (map[FuelType]Stations, error) // Get the stations of customer interest
+	Add(station *Station)                                           // Add a station information to the market
+	Get(customer *Customer, option GetOption) map[FuelType]Stations // Get the stations of customer interest
+	GoodPrice(customer *Customer) map[FuelType]float64              // Get the good Prices for a customer
 }
 
 // FuelType is a type representing a fuel
