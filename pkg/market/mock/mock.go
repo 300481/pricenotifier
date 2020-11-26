@@ -3,6 +3,7 @@ package mock
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/300481/pricenotifier/pkg/market"
@@ -11,7 +12,7 @@ import (
 
 // Customer returns a mocked Customer
 func Customer() *market.Customer {
-	day := int64(86400)
+	day := 86400 * time.Second
 	maxAge := 14 * day
 	return &market.Customer{
 		MaxAge: maxAge,
@@ -45,7 +46,7 @@ func Station(id string, mockname string, prices map[market.FuelType]float64) *ma
 // Stations returns mocked Stations
 func Stations() market.Stations {
 	stations := market.Stations{}
-	for _, mockshortname := range []string{"A", "B", "C", "D", "E"} {
+	for _, mockshortname := range strings.Split("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T", ",") {
 		id := uuid.New().String()
 		mockname := fmt.Sprintf("Station %s", mockshortname)
 		prices := make(map[market.FuelType]float64)
