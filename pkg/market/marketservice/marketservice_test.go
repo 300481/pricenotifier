@@ -1,10 +1,12 @@
 package marketservice
 
 import (
+	"math"
 	"testing"
 
 	"github.com/300481/pricenotifier/pkg/market"
 	"github.com/300481/pricenotifier/pkg/market/mock"
+	"github.com/stretchr/testify/assert"
 	"gonum.org/v1/gonum/stat"
 )
 
@@ -15,34 +17,18 @@ func TestAdd(t *testing.T) {
 	for _, station := range stations {
 		m.Add(station)
 		mstation := m.Stations[StationID(station.ID)]
-		if station.Brand != mstation.Brand {
-			t.Errorf("Brand for Station wrong. ID: %s", station.ID)
-		}
-		if station.ID != mstation.ID {
-			t.Errorf("ID for Station wrong. ID: %s", station.ID)
-		}
-		if station.Name != mstation.Name {
-			t.Errorf("Name for Station wrong. ID: %s", station.ID)
-		}
-		if station.Place != mstation.Place {
-			t.Errorf("Place for Station wrong. ID: %s", station.ID)
-		}
-		if station.Lat != mstation.Lat {
-			t.Errorf("Lat for Station wrong. ID: %s", station.ID)
-		}
-		if station.Lng != mstation.Lng {
-			t.Errorf("Lng for Station wrong. ID: %s", station.ID)
-		}
+
+		assert.Equalf(t, station.ID, mstation.ID, "ID for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.Lat, mstation.Lat, "Lat for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.Lng, mstation.Lng, "Lng for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.Name, mstation.Name, "Name for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.Brand, mstation.Brand, "Brand for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.Place, mstation.Place, "Place for Station wrong. ID: %s", station.ID)
+
 		ts := station.Timestamp
-		if station.Price["Diesel"] != mstation.Price["Diesel"][ts] {
-			t.Errorf("Price Diesel for Station wrong. ID: %s", station.ID)
-		}
-		if station.Price["E5"] != mstation.Price["E5"][ts] {
-			t.Errorf("Price E5 for Station wrong. ID: %s", station.ID)
-		}
-		if station.IsOpen != mstation.IsOpen[ts] {
-			t.Errorf("IsOpen for Station wrong. ID: %s", station.ID)
-		}
+		assert.Equalf(t, station.Price["E5"], mstation.Price["E5"][ts], "Price E5 for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.Price["Diesel"], mstation.Price["Diesel"][ts], "Price Diesel for Station wrong. ID: %s", station.ID)
+		assert.Equalf(t, station.IsOpen, mstation.IsOpen[ts], "IsOpen for Station wrong. ID: %s", station.ID)
 	}
 }
 
@@ -72,9 +58,7 @@ func TestGet(t *testing.T) {
 					found = true
 				}
 			}
-			if !found {
-				t.Errorf("Station %s not got back for fuel %s and for ID %s", src.Brand, string(fuelType), src.ID)
-			}
+			assert.Truef(t, found, "Station %s not got back for fuel %s and for ID %s", src.Brand, string(fuelType), src.ID)
 		}
 	}
 
@@ -104,9 +88,33 @@ func TestGet(t *testing.T) {
 					found = true
 				}
 			}
-			if !found {
-				t.Errorf("Station %s not got back for fuel %s and for ID %s price %.3f good price %.3f", src.Brand, string(fuelType), src.ID, src.Price[fuelType], goodPrice[fuelType])
-			}
+			assert.Truef(t, found, "Station %s not got back for fuel %s and for ID %s price %.3f good price %.3f", src.Brand, string(fuelType), src.ID, src.Price[fuelType], goodPrice[fuelType])
 		}
+	}
+}
+
+func TestGoodPrice(t *testing.T) {
+	stations := mock.Stations()
+	m := NewMarketService()
+	c := mock.Customer()
+	prices := make(map[market.FuelType][]float64)
+
+	// add station to market, fill prices slice
+	for _, station := range stations {
+		m.Add(station)
+		for fuelType, price := range station.Price {
+			prices[fuelType] = append(prices[fuelType], price)
+		}
+	}
+
+	// get the good price from market
+	goodPrice := m.GoodPrice(c)
+
+	// calculate good price
+	for fuelType, fuelPrices := range prices {
+		mean, dev := stat.MeanStdDev(fuelPrices, nil)
+		actual := math.Round(goodPrice[fuelType]*1000) / 1000
+		expected := math.Round((mean-dev)*1000) / 1000
+		assert.Equalf(t, expected, actual, "GoodPrice for fuel %s is wrong. Got %.3f should be %.3f", string(fuelType), actual, expected)
 	}
 }
