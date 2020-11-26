@@ -13,9 +13,6 @@ type MarketService struct {
 	// TODO: implement a geolocation map
 }
 
-// Timestamp is a unix epoch timestamp
-type Timestamp int64
-
 // StationID is the unique ID of a station
 type StationID string
 
@@ -29,9 +26,9 @@ type Station struct {
 	Name        string
 	Place       string
 	Lat, Lng    float64
-	LastUpdated Timestamp
-	Price       map[market.FuelType]map[Timestamp]float64
-	IsOpen      map[Timestamp]bool
+	LastUpdated time.Time
+	Price       map[market.FuelType]map[time.Time]float64
+	IsOpen      map[time.Time]bool
 }
 
 // NewMarketService returns an initialized *MarketService
@@ -44,13 +41,12 @@ func NewMarketService() *MarketService {
 // Add a station information to the market
 func (ms *MarketService) Add(station *market.Station) {
 	// TODO: geolocation map for customer interest station selection
-	timestamp := Timestamp(station.Timestamp.Unix())
 	id := StationID(station.ID)
 
 	if _, ok := ms.Stations[id]; !ok {
 		s := &Station{
-			Price:  make(map[market.FuelType]map[Timestamp]float64),
-			IsOpen: make(map[Timestamp]bool),
+			Price:  make(map[market.FuelType]map[time.Time]float64),
+			IsOpen: make(map[time.Time]bool),
 		}
 		ms.Stations[id] = s
 	}
@@ -64,17 +60,17 @@ func (ms *MarketService) Add(station *market.Station) {
 	s.Place = station.Place
 	s.Lat = station.Lat
 	s.Lng = station.Lng
-	s.LastUpdated = timestamp
+	s.LastUpdated = station.Timestamp
 
 	// add open state
-	s.IsOpen[timestamp] = station.IsOpen
+	s.IsOpen[station.Timestamp] = station.IsOpen
 
 	// add price for fuel type and timestamp
 	for fuelType, price := range station.Price {
 		if _, ok := s.Price[fuelType]; !ok {
-			s.Price[fuelType] = make(map[Timestamp]float64)
+			s.Price[fuelType] = make(map[time.Time]float64)
 		}
-		s.Price[fuelType][timestamp] = price
+		s.Price[fuelType][station.Timestamp] = price
 	}
 }
 
@@ -91,7 +87,6 @@ func (ms *MarketService) customerStations(customer *market.Customer) Stations {
 
 // marketStation transforms a Station of MarketService to a market.Station
 func (ms *MarketService) marketStation(src *Station) *market.Station {
-	timestamp := src.LastUpdated
 	dst := &market.Station{
 		ID:        src.ID,
 		Brand:     src.Brand,
@@ -99,19 +94,19 @@ func (ms *MarketService) marketStation(src *Station) *market.Station {
 		Place:     src.Place,
 		Lat:       src.Lat,
 		Lng:       src.Lng,
-		IsOpen:    src.IsOpen[timestamp],
+		IsOpen:    src.IsOpen[src.LastUpdated],
 		Price:     make(map[market.FuelType]float64),
-		Timestamp: time.Unix(int64(timestamp), 0),
+		Timestamp: src.LastUpdated,
 	}
 	for fuelType := range src.Price {
-		dst.Price[fuelType] = src.Price[fuelType][timestamp]
+		dst.Price[fuelType] = src.Price[fuelType][src.LastUpdated]
 	}
 	return dst
 }
 
 // goodPrice returns the good price for a fuel type and the stations of customers interest
 // returns -1 on error
-func (ms *MarketService) goodPrice(stations Stations, fuelType market.FuelType, maxAge int64) float64 {
+func (ms *MarketService) goodPrice(stations Stations, fuelType market.FuelType, maxAge time.Duration) float64 {
 	goodPrice := 1000.0
 	prices := []float64{}
 
@@ -120,9 +115,12 @@ func (ms *MarketService) goodPrice(stations Stations, fuelType market.FuelType, 
 			if !isOpen {
 				continue
 			}
-			if int64(timestamp) < maxAge {
+
+			oldestTime := time.Now().Add(-maxAge)
+			if timestamp.Before(oldestTime) {
 				continue
 			}
+
 			price := stations[stationID].Price[fuelType][timestamp]
 			prices = append(prices, price)
 		}
@@ -150,21 +148,19 @@ func (ms *MarketService) Get(customer *market.Customer, option market.GetOption)
 
 		// remove stations which have not a good price, if wanted by option
 		if option == market.GetBest {
-			maxAge := time.Now().Unix() - customer.MaxAge
 			goodPrice := make(map[market.FuelType]float64)
 			for _, fuelType := range customer.Fuels {
-				goodPrice[fuelType] = ms.goodPrice(customerStations[fuelType], fuelType, maxAge)
+				goodPrice[fuelType] = ms.goodPrice(customerStations[fuelType], fuelType, customer.MaxAge)
 				if goodPrice[fuelType] == -1 {
 					// on error clean stations and continue to next fuel type
 					customerStations[fuelType] = nil
 					continue
 				}
 				for stationID, station := range customerStations[fuelType] {
-					timestamp := station.LastUpdated
-					if station.IsOpen[timestamp] {
+					if station.IsOpen[station.LastUpdated] {
 						continue
 					}
-					if station.Price[fuelType][timestamp] <= goodPrice[fuelType] {
+					if station.Price[fuelType][station.LastUpdated] <= goodPrice[fuelType] {
 						continue
 					}
 					delete(customerStations[fuelType], stationID)
