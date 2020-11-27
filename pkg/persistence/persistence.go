@@ -7,5 +7,5 @@ import (
 // Persistence defines the interface
 type Persistence interface {
 	NewReader() (io.ReadCloser, error)
-	NewWriter() io.WriteCloser
+	NewWriter() (io.WriteCloser, error)
 }
